@@ -693,7 +693,7 @@
 
     async function loadTransactions() {
       try {
-        const res = await fetch(`http://localhost:3000/api/personal/${userEmail}`);
+        const res = await fetch(`https://expense-manager-bx5l.onrender.com/api/personal/${userEmail}`);
         if (res.ok) {
           transactions = await res.json();
           calculateTotals();
@@ -721,7 +721,7 @@
       };
 
       try {
-        const res = await fetch('http://localhost:3000/api/personal/add', {
+        const res = await fetch('https://expense-manager-bx5l.onrender.com/api/personal/add', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(newTx)

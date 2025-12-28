@@ -292,7 +292,7 @@
 
         async function loadGroups() {
             try {
-                const res = await fetch('http://localhost:3000/api/groups');
+                const res = await fetch('https://expense-manager-bx5l.onrender.com/api/groups');
                 if (res.ok) {
                     groups = await res.json();
                     renderGroups();
@@ -359,7 +359,7 @@
             };
 
             try {
-                const res = await fetch('http://localhost:3000/api/groups/create', {
+                const res = await fetch('https://expense-manager-bx5l.onrender.com/api/groups/create', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(newGroup)

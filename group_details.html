@@ -360,7 +360,7 @@
                 // Ideally we'd fetch group metadata too, but to save time, I'll just set a generic name or fetch all groups to find name)
 
                 // Let's fetch expenses
-                const res = await fetch(`http://localhost:3000/api/groups/${groupId}/expenses`);
+                const res = await fetch(`https://expense-manager-bx5l.onrender.com/api/groups/${groupId}/expenses`);
                 if (res.ok) {
                     transactions = await res.json();
                     renderTransactions();
@@ -463,7 +463,7 @@
             };
 
             try {
-                const res = await fetch('http://localhost:3000/api/groups/expense/add', {
+                const res = await fetch('https://expense-manager-bx5l.onrender.com/api/groups/details/e/add', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(newTx)
