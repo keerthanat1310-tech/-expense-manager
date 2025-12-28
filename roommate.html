@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Roommate Dashboard</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script>
+    if (!localStorage.getItem('loggedInUser')) {
+      window.location.href = 'login .html';
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      --bg: #070708;
+      --panel: #0f1112;
+      --muted: #9aa4ac;
+      --accent: #0b74d1;
+      --spend: #e67b88;
+      --income: #79c78a;
+      --card: #0f1416;
+    }
+
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+      color: #e7eef6;
+      background: linear-gradient(180deg, #060607, #0b0c0d);
+    }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 28px auto;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px
+    }
+
+    .greet {
+      display: flex;
+      flex-direction: column
+    }
+
+    .greet .salute {
+      color: var(--muted);
+      font-size: 14px
+    }
+
+    .greet .name {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 1px
+    }
+
+    .icons {
+      display: flex;
+      gap: 10px;
+      align-items: center
+    }
+
+    .round {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(255, 255, 255, 0.03)
+    }
+
+    .controls {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+      align-items: center
+    }
+
+    select.month {
+      background: transparent;
+      color: inherit;
+      border: 0;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 15px
+    }
+
+    .searchbtn {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      padding: 8px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      color: var(--muted)
+    }
+
+    .pills {
+      margin-top: 18px;
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap
+    }
+
+    .pill {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      border-radius: 999px;
+      min-width: 210px
+    }
+
+    .pill .dot {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700
+    }
+
+    .pill .meta {
+      display: flex;
+      flex-direction: column
+    }
+
+    .pill .title {
+      font-size: 13px;
+      opacity: 0.95
+    }
+
+    .pill .val {
+      font-size: 20px;
+      font-weight: 700
+    }
+
+    .pill.spend {
+      background: linear-gradient(180deg, rgba(230, 123, 136, 0.10), rgba(230, 123, 136, 0.06));
+      border: 1px solid rgba(230, 123, 136, 0.08)
+    }
+
+    .pill.spend .dot {
+      background: var(--spend);
+      color: #fff
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+      padding: 18px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.03)
+    }
+
+    .recent {
+      margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px
+    }
+
+    .tx {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.01), rgba(255, 255, 255, 0.007));
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.015)
+    }
+
+    .tx .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--muted);
+      font-size: 22px
+    }
+
+    .tx .meta {
+      flex: 1;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center
+    }
+
+    .tx .left {
+      display: flex;
+      flex-direction: column;
+      gap: 4px
+    }
+
+    .tx .desc {
+      font-weight: 700
+    }
+
+    .tx .sub {
+      color: var(--muted);
+      font-size: 13px
+    }
+
+    .tx .right {
+      text-align: right
+    }
+
+    .tx .amt {
+      font-weight: 800;
+      color: #00ffff
+    }
+
+    .tx .date {
+      color: var(--muted);
+      font-size: 13px
+    }
+
+    .tx .split {
+      font-size: 13px;
+      color: #9aa4ac
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 14px
+    }
+
+    .bottom-nav {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.8));
+      padding: 10px 20px;
+      display: flex;
+      justify-content: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.02);
+      z-index: 60
+    }
+
+    .nav-inner {
+      max-width: 1100px;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center
+    }
+
+    .nav-left,
+    .nav-right {
+      display: flex;
+      gap: 26px;
+      align-items: center;
+      color: var(--muted)
+    }
+
+    .center-add {
+      transform: translateY(-28px)
+    }
+
+    .add-circle {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #111;
+      font-size: 34px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      cursor: pointer
+    }
+
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      align-items: center;
+      justify-content: center;
+      z-index: 120
+    }
+
+    .modal {
+      width: 520px;
+      background: linear-gradient(180deg, #0b1114, #061015);
+      border-radius: 12px;
+      padding: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      box-shadow: 0 30px 70px rgba(0, 0, 0, 0.7)
+    }
+
+    .modal h3 {
+      margin: 0 0 8px 0
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      align-items: center
+    }
+
+    .type-toggle {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px
+    }
+
+    .type-toggle label {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.02);
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.02)
+    }
+
+    .modal input[type="number"],
+    .modal input[type="text"],
+    .modal input[type="date"],
+    .modal select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      background: transparent;
+      color: #e7eef6;
+      margin-bottom: 8px
+    }
+
+    .modal .note {
+      height: 64px;
+      resize: none;
+      padding: 10px
+    }
+
+    .modal .actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px
+    }
+
+    .btn {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer
+    }
+
+    .btn.cancel {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      color: var(--muted)
+    }
+
+    .btn.save {
+      background: var(--accent);
+      color: #fff
+    }
+
+    .cat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin: 8px 0 12px
+    }
+
+    .cat-item {
+      background: rgba(255, 255, 255, 0.02);
+      padding: 10px;
+      border-radius: 10px;
+      text-align: center;
+      cursor: pointer;
+      border: 1px solid transparent
+    }
+
+    .cat-item.selected {
+      border-color: rgba(11, 116, 209, 0.6);
+      box-shadow: 0 8px 20px rgba(11, 116, 209, 0.06);
+      transform: translateY(-2px)
+    }
+
+    .cat-emoji {
+      font-size: 20px
+    }
+
+    .cat-name {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 6px
+    }
+
+    .muted {
+      color: var(--muted)
+    }
+
+    /* Back button styling */
+    .back-btn {
+      margin: 10px 0 15px 0;
+      padding: 8px 15px;
+      border-radius: 8px;
+      border: none;
+      background: #00ffff;
+      color: #000;
+      cursor: pointer;
+      font-weight: 600;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+
+    <!-- MAIN -->
+    <div>
+      <button class="back-btn" onclick="window.location.href='home.html'">⬅ Back to Home</button>
+      <div class="topbar">
+        <div class="greet">
+          <div class="salute" id="greeting">Good Afternoon</div>
+          <div class="name" id="userName">Roommate</div>
+        </div>
+      </div>
+
+      <div class="pills" style="margin-top:18px">
+        <div class="pill spend">
+          <div class="dot">💰</div>
+          <div class="meta">
+            <div class="title">Total Shared Expenses</div>
+            <div class="val">₹ <span id="spendVal">0</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-weight:700">Recent Shared Transactions</div>
+        </div>
+
+        <div id="recentList" class="recent" aria-live="polite">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <canvas id="pieChart" width="150" height="150"></canvas>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div class="muted">Roommates</div>
+            <div style="font-weight:700;margin-top:6px" id="roommatesList">Alice, Bob, Charlie</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav" role="navigation">
+    <div class="nav-inner">
+      <div class="nav-left">🏠 <span class="muted">Home</span></div>
+      <div class="center-add">
+        <div class="add-circle" id="openModal">+</div>
+      </div>
+      <div class="nav-right"><span class="muted">Accounts</span> ⋯</div>
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div id="backdrop" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal">
+      <h3>Add Shared Expense</h3>
+
+      <input id="amountInput" type="number" placeholder="Amount (₹)" min="0" step="0.01" />
+
+      <div style="font-size:13px;color:var(--muted);margin-bottom:6px">Choose category</div>
+      <div id="catGrid" class="cat-grid"></div>
+
+      <input id="dateInput" type="date" />
+      <input id="paidByInput" type="text" placeholder="Paid By (e.g., Alice)" />
+      <input id="splitInput" type="text" placeholder="Split Among (comma separated, e.g., Alice,Bob)" />
+
+      <div class="actions" style="margin-top:10px">
+        <button class="btn cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn save" onclick="saveTx()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const categories = [
+      { id: 'rent', name: 'Rent', emoji: '🏠' },
+      { id: 'electricity', name: 'Electricity', emoji: '💡' },
+      { id: 'water', name: 'Water', emoji: '💧' },
+      { id: 'groceries', name: 'Groceries', emoji: '🛒' },
+      { id: 'food', name: 'Food', emoji: '🍔' },
+      { id: 'household', name: 'Household', emoji: '🧹' },
+      { id: 'others', name: 'Others', emoji: '📦' }
+    ];
+
+    const spendEl = document.getElementById('spendVal');
+    const recentList = document.getElementById('recentList');
+    const backdrop = document.getElementById('backdrop');
+    const catGrid = document.getElementById('catGrid');
+    const pieCtx = document.getElementById('pieChart').getContext('2d');
+
+    let transactions = [];
+    let selectedCategory = categories[0].id;
+    let pieChart = null;
+
+    async function init() {
+      await loadTransactions();
+      buildCategoryGrid();
+    }
+
+    async function loadTransactions() {
+      try {
+        const res = await fetch('http://localhost:3000/api/roommate');
+        if (res.ok) {
+          transactions = await res.json();
+          renderTransactions();
+        }
+      } catch (err) { console.error('Load Error:', err); }
+    }
+
+    function buildCategoryGrid() {
+      catGrid.innerHTML = '';
+      categories.forEach(cat => {
+        const div = document.createElement('div');
+        div.className = 'cat-item' + (cat.id === selectedCategory ? ' selected' : '');
+        div.dataset.id = cat.id;
+        div.innerHTML = `<span class="cat-emoji">${cat.emoji}</span><div class="cat-name">${cat.name}</div>`;
+        div.addEventListener('click', () => {
+          selectedCategory = cat.id;
+          document.querySelectorAll('.cat-item').forEach(n => n.classList.remove('selected'));
+          div.classList.add('selected');
+        });
+        catGrid.appendChild(div);
+      });
+    }
+
+    function renderTransactions() {
+      recentList.innerHTML = '';
+      let total = 0;
+      const categoryTotals = {};
+      if (transactions.length === 0) {
+        recentList.innerHTML = '<div class="muted" style="padding:10px">No shared transactions yet — press + to add one</div>';
+      }
+      transactions.slice().reverse().forEach(tx => {
+        total += Number(tx.amount);
+        categoryTotals[tx.category] = (categoryTotals[tx.category] || 0) + Number(tx.amount);
+        const d = document.createElement('div');
+        d.className = 'tx';
+        const dateStr = new Date(tx.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' });
+        const split = (tx.splitAmong && tx.splitAmong.length > 0) ? `Each: ₹${(tx.amount / tx.splitAmong.length).toFixed(0)}` : '';
+        const cat = categories.find(c => c.id === tx.category) || { emoji: '❓' };
+
+        d.innerHTML = `
+      <div class="avatar">${cat.emoji}</div>
+      <div class="meta">
+        <div class="left">
+          <div class="desc">${tx.category}</div>
+          <div class="sub">Paid by ${tx.paidBy}</div>
+        </div>
+        <div class="right">
+          <div class="amt">₹${Number(tx.amount).toLocaleString('en-IN')}</div>
+          <div class="split">${split}</div>
+          <div class="date">${dateStr}</div>
+        </div>
+      </div>
+    `;
+        recentList.appendChild(d);
+      });
+      spendEl.textContent = total.toLocaleString('en-IN');
+      renderPieChart(categoryTotals);
+    }
+
+    function renderPieChart(categoryTotals) {
+      if (pieChart) pieChart.destroy();
+      pieChart = new Chart(pieCtx, {
+        type: 'pie',
+        data: {
+          labels: Object.keys(categoryTotals),
+          datasets: [{
+            data: Object.values(categoryTotals),
+            backgroundColor: ['#f94144', '#f3722c', '#f8961e', '#f9844a', '#43aa8b', '#577590', '#90be6d']
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { position: 'bottom', labels: { color: '#fff', font: { size: 10 } } } }
+        }
+      });
+    }
+
+    async function saveTx() {
+      const amount = Number(document.getElementById('amountInput').value);
+      const date = document.getElementById('dateInput').value || new Date().toISOString();
+      const paidBy = document.getElementById('paidByInput').value.trim() || 'Unknown';
+      const splitInput = document.getElementById('splitInput').value.trim();
+      const splitAmong = splitInput ? splitInput.split(',').map(s => s.trim()) : [paidBy];
+      const category = selectedCategory;
+
+      if (!amount || amount <= 0) { alert('Enter valid amount'); return; }
+
+      const newTx = {
+        amount,
+        date,
+        paidBy,
+        splitAmong,
+        category
+      };
+
+      try {
+        const res = await fetch('http://localhost:3000/api/roommate/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newTx)
+        });
+        if (res.ok) {
+          closeModal();
+          loadTransactions();
+        } else { alert('Failed to save'); }
+      } catch (e) { console.error(e); }
+    }
+
+    function openModal() {
+      backdrop.style.display = 'flex';
+      document.getElementById('amountInput').value = '';
+      document.getElementById('paidByInput').value = '';
+      document.getElementById('splitInput').value = '';
+      document.getElementById('dateInput').value = new Date().toISOString().split('T')[0];
+      selectedCategory = categories[0].id;
+      buildCategoryGrid();
+    }
+
+    function closeModal() { backdrop.style.display = 'none'; }
+
+    document.getElementById('openModal').addEventListener('click', openModal);
+    backdrop.addEventListener('click', (e) => { if (e.target === backdrop) closeModal(); });
+
+    // Greeting based on time
+    const hour = new Date().getHours();
+    const greetText = hour < 12 ? 'Good Morning' : hour < 18 ? 'Good Afternoon' : 'Good Evening';
+    document.getElementById('greeting').textContent = greetText;
+
+    // Load username from login
+    const username = localStorage.getItem('loggedInUser') || 'Roommate';
+    document.getElementById('userName').textContent = username;
+
+    init();
+  </script>
+</body>
+
+</html>

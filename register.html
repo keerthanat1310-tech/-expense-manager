@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | Expense Manager</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+
+        body {
+            background: url("bg.png");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-box {
+            width: 420px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 35px;
+            border-radius: 18px;
+            position: relative;
+            box-shadow: 0 0 25px #00ffff;
+            animation: glow 2s infinite alternate;
+            backdrop-filter: blur(8px);
+        }
+
+        @keyframes glow {
+            from {
+                box-shadow: 0 0 15px #00ffff;
+            }
+
+            to {
+                box-shadow: 0 0 35px #00ffff;
+            }
+        }
+
+        .logo {
+            width: 100px;
+            height: 100px;
+            background: white;
+            border-radius: 50%;
+            margin: 0 auto;
+            margin-bottom: 15px;
+            background-image: url("https://cdn-icons-png.flaticon.com/512/2331/2331947.png");
+            background-size: 70%;
+            background-repeat: no-repeat;
+            background-position: center;
+            border: 4px solid #00ffff;
+            box-shadow: 0 0 20px #00ffff;
+        }
+
+        h2 {
+            color: #00ffff;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 28px;
+            text-shadow: 0 0 10px #00ffff;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            color: #ffffff;
+            font-size: 15px;
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+            font-size: 15px;
+            background: #ffffff;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 25px;
+            font-size: 17px;
+            font-weight: 700;
+            background: #00ffff;
+            color: #000;
+            cursor: pointer;
+            box-shadow: 0 0 10px #00ffff;
+            transition: .3s;
+        }
+
+        button:hover {
+            background: #ffffff;
+            box-shadow: 0 0 20px #00ffff;
+        }
+
+        .link {
+            text-align: center;
+            margin-top: 15px;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .link a {
+            color: #00ffff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .link a:hover {
+            text-decoration: underline;
+        }
+
+        .error {
+            color: #ff5858;
+            font-size: 13px;
+            margin-top: 5px;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-box">
+
+        <!-- LOGO -->
+        <div class="logo"></div>
+
+        <h2>Register</h2>
+
+        <div class="input-group">
+            <label>Username</label>
+            <input type="text" id="username" placeholder="Choose a username">
+        </div>
+
+        <div class="input-group">
+            <label>Email</label>
+            <input type="email" id="email" placeholder="Enter your email">
+        </div>
+
+        <div class="input-group">
+            <label>Password</label>
+            <input type="password" id="password" placeholder="Create a password">
+        </div>
+
+        <div class="input-group">
+            <label>Confirm Password</label>
+            <input type="password" id="confirmPassword" placeholder="Confirm your password">
+            <div class="error" id="errorMsg">Passwords do not match!</div>
+        </div>
+
+        <button onclick="register()">Create Account</button>
+
+        <div class="link">
+            Already have an account? <a href="login .html">Login here</a>
+        </div>
+
+    </div>
+
+
+    <script>
+        async function register() {
+            const username = document.getElementById("username").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+            const confirmPassword = document.getElementById("confirmPassword").value;
+            const errorMsg = document.getElementById("errorMsg");
+
+            // Basic validation
+            if (!username || !email || !password || !confirmPassword) {
+                alert("Please fill all fields!");
+                return;
+            }
+
+            // Password confirmation
+            if (password !== confirmPassword) {
+                errorMsg.style.display = "block";
+                return;
+            } else {
+                errorMsg.style.display = "none";
+            }
+
+            try {
+                // Call Backend API
+                const response = await fetch('http://localhost:3000/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert("Registration Successful! Please Login.");
+                    window.location.href = "login .html";
+                } else {
+                    alert("Error: " + data.error);
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Failed to connect to server. Is it running?");
+            }
+        }
+    </script>
+
+</body>
+
+</html>

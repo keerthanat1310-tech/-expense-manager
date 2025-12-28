@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Groups | Expense Manager</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script>
+        if (!localStorage.getItem('loggedInUser')) {
+            window.location.href = 'login .html';
+        }
+    </script>
+
+    <style>
+        :root {
+            --bg: #070708;
+            --panel: #0f1112;
+            --muted: #9aa4ac;
+            --accent: #0b74d1;
+            /* Whatsapp-ish blue/green could be nice, but sticking to theme */
+            --card: #0f1416;
+            --hover: rgba(255, 255, 255, 0.05);
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+            color: #e7eef6;
+            background: linear-gradient(180deg, #060607, #0b0c0d);
+        }
+
+        .wrap {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            padding: 15px 20px;
+            background: var(--panel);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .header h2 {
+            margin: 0;
+            font-size: 1.3rem;
+            flex: 1;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            color: var(--accent);
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        /* List */
+        .group-list {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 80px;
+            /* Space for FAB */
+        }
+
+        .group-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        .group-item:hover {
+            background: var(--hover);
+        }
+
+        .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .info {
+            flex: 1;
+            min-width: 0;
+            /* for truncation */
+        }
+
+        .top-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+
+        .group-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .time {
+            font-size: 0.8rem;
+            color: var(--muted);
+            white-space: nowrap;
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: var(--muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .subtitle span {
+            color: #fff;
+            /* Sender name highlight */
+        }
+
+        /* FAB */
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: #00f0ff;
+            /* Theme accent */
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: #000;
+            box-shadow: 0 4px 15px rgba(0, 240, 255, 0.3);
+            cursor: pointer;
+            transition: transform 0.2s;
+            z-index: 20;
+        }
+
+        .fab:hover {
+            transform: scale(1.1);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--muted);
+        }
+
+        /* Modal */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            align-items: center;
+            justify-content: center;
+            z-index: 120
+        }
+
+        .modal {
+            width: 400px;
+            background: linear-gradient(180deg, #0b1114, #061015);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            box-shadow: 0 30px 70px rgba(0, 0, 0, 0.7)
+        }
+
+        .modal h3 {
+            margin: 0 0 15px 0
+        }
+
+        .modal input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            background: rgba(255, 255, 255, 0.02);
+            color: #e7eef6;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+
+        .modal .actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px
+        }
+
+        .btn {
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn.cancel {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--muted)
+        }
+
+        .btn.save {
+            background: #00f0ff;
+            color: #000
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="wrap">
+        <!-- Header -->
+        <div class="header">
+            <button class="back-btn" onclick="window.location.href='home.html'">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <h2>Groups</h2>
+            <div class="header-actions">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <i class="fa-solid fa-ellipsis-vertical"></i>
+            </div>
+        </div>
+
+        <!-- List -->
+        <div class="group-list" id="groupList">
+            <!-- Generated by JS -->
+        </div>
+    </div>
+
+    <!-- FAB -->
+    <div class="fab" onclick="openModal()">
+        <i class="fa-solid fa-plus"></i>
+    </div>
+
+    <!-- MODAL -->
+    <div id="backdrop" class="modal-backdrop">
+        <div class="modal">
+            <h3>Create New Group</h3>
+            <input id="groupNameInput" type="text" placeholder="Group Subject (e.g. Goa Trip)" />
+            <div class="actions">
+                <button class="btn cancel" onclick="closeModal()">Cancel</button>
+                <button class="btn save" onclick="saveGroup()">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let groups = [];
+        const groupListEl = document.getElementById('groupList');
+        const backdrop = document.getElementById('backdrop');
+
+        async function loadGroups() {
+            try {
+                const res = await fetch('http://localhost:3000/api/groups');
+                if (res.ok) {
+                    groups = await res.json();
+                    renderGroups();
+                }
+            } catch (err) {
+                console.error("Failed to load groups", err);
+            }
+        }
+
+        function renderGroups() {
+            groupListEl.innerHTML = '';
+
+            if (groups.length === 0) {
+                groupListEl.innerHTML = '<div class="empty-state">No groups yet. Tap + to create one.</div>';
+                return;
+            }
+
+            groups.forEach(g => {
+                const item = document.createElement('div');
+                item.className = 'group-item';
+                item.onclick = () => window.location.href = `group_details.html?id=${g.id}`;
+
+                const avatarColor = g.color || '#0b74d1';
+
+                item.innerHTML = `
+        <div class="avatar" style="background: ${avatarColor}">
+          <i class="fa-solid fa-users"></i>
+        </div>
+        <div class="info">
+          <div class="top-row">
+            <div class="group-name">${g.name}</div>
+            <div class="time">${g.time || 'Now'}</div>
+          </div>
+          <div class="subtitle">
+            ${g.lastMsg || 'Tap to send a message'}
+          </div>
+        </div>
+      `;
+                groupListEl.appendChild(item);
+            });
+        }
+
+        function openModal() {
+            backdrop.style.display = 'flex';
+            document.getElementById('groupNameInput').value = '';
+            document.getElementById('groupNameInput').focus();
+        }
+
+        function closeModal() {
+            backdrop.style.display = 'none';
+        }
+
+        async function saveGroup() {
+            const name = document.getElementById('groupNameInput').value.trim();
+            if (!name) return;
+
+            const newGroup = {
+                id: Date.now().toString(),
+                name: name,
+                lastMsg: "Group created",
+                time: "Just now",
+                color: '#' + Math.floor(Math.random() * 16777215).toString(16),
+                createdBy: localStorage.getItem('userEmail')
+            };
+
+            try {
+                const res = await fetch('http://localhost:3000/api/groups/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newGroup)
+                });
+
+                if (res.ok) {
+                    closeModal();
+                    loadGroups();
+                } else {
+                    alert("Failed to create group");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Network error");
+            }
+        }
+
+        // Close modal on outside click
+        window.onclick = function (event) {
+            if (event.target == backdrop) {
+                closeModal();
+            }
+        }
+
+        loadGroups();
+    </script>
+</body>
+
+</html>

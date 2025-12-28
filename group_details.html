@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Group Details | Expense Manager</title>
+    <script>
+        if (!localStorage.getItem('loggedInUser')) {
+            window.location.href = 'login .html';
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #070708;
+            --panel: #0f1112;
+            --muted: #9aa4ac;
+            --accent: #0b74d1;
+            --card: #0f1416;
+            --hover: rgba(255, 255, 255, 0.05);
+            --spend: #e67b88;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+            color: #e7eef6;
+            background: linear-gradient(180deg, #060607, #0b0c0d);
+        }
+
+        .wrap {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            padding: 15px 20px;
+            background: var(--panel);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .header-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header h2 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .header-sub {
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        .header-actions {
+            color: var(--accent);
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        /* Summary Card */
+        .summary-card {
+            margin: 20px;
+            padding: 20px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            text-align: center;
+        }
+
+        .total-label {
+            font-size: 0.9rem;
+            color: var(--muted);
+            margin-bottom: 5px;
+        }
+
+        .total-amount {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        /* List */
+        .tx-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 20px 80px 20px;
+        }
+
+        .tx-item {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        .tx-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .tx-info {
+            flex: 1;
+        }
+
+        .tx-desc {
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .tx-meta {
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        .tx-amount {
+            font-weight: 700;
+            color: #00f0ff;
+        }
+
+        /* FAB */
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: #00f0ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: #000;
+            box-shadow: 0 4px 15px rgba(0, 240, 255, 0.3);
+            cursor: pointer;
+            transition: transform 0.2s;
+            z-index: 20;
+        }
+
+        .fab:hover {
+            transform: scale(1.1);
+        }
+
+        /* Modal */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            align-items: center;
+            justify-content: center;
+            z-index: 120;
+        }
+
+        .modal {
+            width: 90%;
+            max-width: 400px;
+            background: linear-gradient(180deg, #0b1114, #061015);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            box-shadow: 0 30px 70px rgba(0, 0, 0, 0.7);
+        }
+
+        .modal h3 {
+            margin: 0 0 15px 0;
+        }
+
+        .modal input,
+        .modal select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            background: rgba(255, 255, 255, 0.02);
+            color: #e7eef6;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+        }
+
+        .modal .actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .btn {
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn.cancel {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--muted);
+        }
+
+        .btn.save {
+            background: #00f0ff;
+            color: #000;
+        }
+
+        /* Category Grid */
+        .cat-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .cat-item {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 8px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .cat-item.selected {
+            border-color: #00f0ff;
+            background: rgba(0, 240, 255, 0.1);
+        }
+
+        .cat-emoji {
+            font-size: 1.5rem;
+            display: block;
+        }
+
+        .cat-name {
+            font-size: 0.7rem;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--muted);
+            margin-top: 50px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="wrap">
+        <!-- Header -->
+        <div class="header">
+            <button class="back-btn" onclick="window.location.href='group.html'">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <div class="header-info">
+                <h2 id="groupName">Loading...</h2>
+                <div class="header-sub" id="groupMeta">Group Details</div>
+            </div>
+            <div class="header-actions">
+                <i class="fa-solid fa-gear"></i>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="summary-card">
+            <div class="total-label">Total Media Expenses</div>
+            <div class="total-amount" id="totalSpend">₹0</div>
+        </div>
+
+        <!-- Transaction List -->
+        <div class="tx-list" id="txList">
+            <!-- JS -->
+        </div>
+    </div>
+
+    <!-- FAB -->
+    <div class="fab" onclick="openModal()">
+        <i class="fa-solid fa-plus"></i>
+    </div>
+
+    <!-- Modal -->
+    <div id="backdrop" class="modal-backdrop">
+        <div class="modal">
+            <h3>Add Expense</h3>
+
+            <input id="amountInput" type="number" placeholder="Amount (₹)" />
+
+            <div class="cat-grid" id="catGrid"></div>
+
+            <input id="descInput" type="text" placeholder="Description (e.g. Dinner)" />
+            <input id="paidByInput" type="text" placeholder="Paid By (e.g. You)" />
+
+            <div class="actions">
+                <button class="btn cancel" onclick="closeModal()">Cancel</button>
+                <button class="btn save" onclick="saveTx()">Add</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get Group ID
+        const urlParams = new URLSearchParams(window.location.search);
+        const groupId = urlParams.get('id');
+
+        if (!groupId) {
+            alert('No Group ID found!');
+            window.location.href = 'group.html';
+        }
+
+        // Data Storage Keys
+        let selectedCategory = 'food';
+        let transactions = [];
+
+        async function init() {
+            // Fetch Transcations
+            await loadTransactions();
+            renderCategories();
+        }
+
+        async function loadTransactions() {
+            try {
+                // Determine group Name (Mock or fetch if we had a single group fetch API, 
+                // but since we list all groups on group.html, we can just rely on the user knowing which one they clicked 
+                // OR ideally we fetch group details. For now, let's just fetch expenses. 
+                // Ideally we'd fetch group metadata too, but to save time, I'll just set a generic name or fetch all groups to find name)
+
+                // Let's fetch expenses
+                const res = await fetch(`http://localhost:3000/api/groups/${groupId}/expenses`);
+                if (res.ok) {
+                    transactions = await res.json();
+                    renderTransactions();
+                }
+
+                // Temporary: Set Name from URL or generic since we didn't make a get-single-group API
+                document.getElementById('groupName').textContent = "Group Details";
+                document.getElementById('groupMeta').textContent = "Active";
+
+            } catch (e) { console.error(e); }
+        }
+
+        // Categories
+        const categories = [
+            { id: 'rent', name: 'Rent', emoji: '🏠' },
+            { id: 'electricity', name: 'Electricity', emoji: '💡' },
+            { id: 'water', name: 'Water Bill', emoji: '💧' },
+            { id: 'groceries', name: 'Groceries', emoji: '🛒' },
+            { id: 'food', name: 'Food', emoji: '🍔' },
+            { id: 'household', name: 'Household', emoji: '🧹' },
+            { id: 'others', name: 'Others', emoji: '📦' },
+        ];
+
+        function renderCategories() {
+            const grid = document.getElementById('catGrid');
+            grid.innerHTML = '';
+            categories.forEach(cat => {
+                const el = document.createElement('div');
+                el.className = `cat-item ${cat.id === selectedCategory ? 'selected' : ''}`;
+                el.innerHTML = `<span class="cat-emoji">${cat.emoji}</span><span class="cat-name">${cat.name}</span>`;
+                el.onclick = () => {
+                    selectedCategory = cat.id;
+                    renderCategories();
+                };
+                grid.appendChild(el);
+            });
+        }
+
+        function renderTransactions() {
+            const list = document.getElementById('txList');
+            const totalEl = document.getElementById('totalSpend');
+
+            // Calculate total
+            const total = transactions.reduce((sum, t) => sum + Number(t.amount), 0);
+            totalEl.textContent = '₹' + total.toLocaleString();
+
+            list.innerHTML = '';
+            if (transactions.length === 0) {
+                list.innerHTML = '<div class="empty-state">No expenses yet.<br>Tap + to add one.</div>';
+                return;
+            }
+
+            transactions.forEach(tx => {
+                const item = document.createElement('div');
+                item.className = 'tx-item';
+
+                const cat = categories.find(c => c.id === tx.category) || { emoji: '❓' };
+
+                item.innerHTML = `
+                    <div class="tx-avatar">${cat.emoji}</div>
+                    <div class="tx-info">
+                        <div class="tx-desc">${tx.description || cat.name}</div>
+                        <div class="tx-meta">${tx.paidBy} paid • ${new Date(tx.date).toLocaleDateString()}</div>
+                    </div>
+                    <div class="tx-amount">₹${Number(tx.amount).toLocaleString()}</div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        // Modal Logic
+        const backdrop = document.getElementById('backdrop');
+
+        function openModal() {
+            backdrop.style.display = 'flex';
+            document.getElementById('amountInput').value = '';
+            document.getElementById('descInput').value = '';
+            document.getElementById('paidByInput').value = 'You'; // Default
+            document.getElementById('amountInput').focus();
+        }
+
+        function closeModal() {
+            backdrop.style.display = 'none';
+        }
+
+        async function saveTx() {
+            const amount = document.getElementById('amountInput').value;
+            const desc = document.getElementById('descInput').value;
+            const paidBy = document.getElementById('paidByInput').value;
+
+            if (!amount) return;
+
+            const newTx = {
+                groupId: groupId,
+                amount: Number(amount),
+                category: selectedCategory,
+                description: desc,
+                paidBy: paidBy,
+                date: new Date().toISOString()
+            };
+
+            try {
+                const res = await fetch('http://localhost:3000/api/groups/expense/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newTx)
+                });
+                if (res.ok) {
+                    closeModal();
+                    loadTransactions();
+                } else {
+                    alert('Error saving expense');
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        // Close on outside click
+        window.onclick = function (event) {
+            if (event.target == backdrop) closeModal();
+        }
+
+        init();
+
+    </script>
+</body>
+
+</html>

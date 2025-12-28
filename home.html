@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home | Expense Manager</title>
+
+  <!-- Google Fonts -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;500&display=swap"
+    rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: #0b1b22;
+      color: white;
+      text-align: center;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 3.5rem;
+      margin-top: 30px;
+      color: #00f0ff;
+      text-shadow: 0 0 20px #00f0ff;
+    }
+
+    h2 {
+      font-size: 1.8rem;
+      color: #00eaff;
+      margin-top: -10px;
+    }
+
+    .intro-box {
+      background: rgba(255, 255, 255, 0.08);
+      padding: 25px;
+      width: 70%;
+      margin: 30px auto;
+      border-radius: 15px;
+      font-size: 1.2rem;
+      line-height: 1.6;
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-top: 40px;
+      flex-wrap: wrap;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.08);
+      width: 300px;
+      padding: 25px;
+      border-radius: 20px;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+      transition: transform 0.3s ease;
+    }
+
+    .card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 25px rgba(0, 255, 255, 0.5);
+    }
+
+    .card img {
+      width: 100px;
+      margin-bottom: 15px;
+    }
+
+    .card h3 {
+      font-size: 1.7rem;
+      font-family: 'Playfair Display', serif;
+      color: #00f0ff;
+    }
+
+    .card p {
+      font-size: 1rem;
+      margin-top: -5px;
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+
+    .btn {
+      background: #00f0ff;
+      padding: 12px 25px;
+      border-radius: 30px;
+      color: black;
+      font-weight: 600;
+      text-decoration: none;
+      transition: 0.3s;
+    }
+
+    .btn:hover {
+      background: white;
+    }
+
+    .logout-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: transparent;
+      border: 1px solid #00f0ff;
+      color: #00f0ff;
+      padding: 8px 15px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .logout-btn:hover {
+      background: #00f0ff;
+      color: black;
+    }
+  </style>
+  <script>
+    if (!localStorage.getItem('loggedInUser')) {
+      window.location.href = 'login .html';
+    }
+  </script>
+</head>
+
+<body>
+  <button class="logout-btn" onclick="logout()">Logout</button>
+
+  <script>
+    function logout() {
+      localStorage.removeItem('loggedInUser');
+      localStorage.removeItem('userEmail');
+      window.location.href = 'login .html';
+    }
+  </script>
+
+  <h1>Welcome to Expense Manager</h1>
+
+  <!-- Username loaded from login -->
+  <h2 id="welcomeName">Hi, welcome!</h2>
+
+  <script>
+    // Load name saved from login page
+    let name = localStorage.getItem("loggedInUser");
+
+    if (name) {
+      document.getElementById("welcomeName").innerText = "Hi, welcome " + name + "!";
+    }
+  </script>
+
+  <div class="intro-box">
+    Managing expenses has never been easier! Whether it’s your personal finances, splitting bills with roommates, or
+    managing a group trip — this tool helps you stay on top of every transaction effortlessly.
+  </div>
+
+  <div class="container">
+
+    <!-- PERSONAL -->
+    <div class="card">
+      <img src="https://cdn-icons-png.flaticon.com/512/7067/7067977.png" alt="">
+      <h3>Personal</h3>
+      <p>Manage your personal daily expenses and track your spending habits.</p>
+      <a href="personal.html" class="btn">Open Dashboard</a>
+    </div>
+
+    <!-- ROOMMATE -->
+    <div class="card">
+      <img src="https://cdn-icons-png.flaticon.com/512/1077/1077063.png" alt="">
+      <h3>Roommate</h3>
+      <p>Split and manage shared expenses easily with your roommates.</p>
+      <a href="roommate.html" class="btn">View Roommates</a>
+    </div>
+
+    <!-- ADD GROUP -->
+    <div class="card">
+      <img src="https://cdn-icons-png.flaticon.com/512/992/992651.png" alt="">
+      <h3>Add Group</h3>
+      <p>Create and manage expense groups for friends, trips, or teams.</p>
+      <a href="group.html" class="btn">Create Group</a>
+    </div>
+
+  </div>
+
+</body>
+
+</html>

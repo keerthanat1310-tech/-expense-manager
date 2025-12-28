@@ -1,0 +1,14 @@
+{
+  "users": [
+    {
+      "username": "admin",
+      "email": "admin@expense.com",
+      "password": "admin"
+    }
+  ],
+  "expenses": [],
+  "personalExpenses": [],
+  "groups": [],
+  "groupExpenses": [],
+  "roommateTx": []
+}
